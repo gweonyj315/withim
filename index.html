@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#1f5f5b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f5f5b'/%3E%3Cpath d='M18 16h12a6 6 0 0 1 6 6v28a5 5 0 0 0-5-5H18zM46 16H38a6 6 0 0 0-2 .3V50a5 5 0 0 1 5-5h5z' fill='%23fffdf8'/%3E%3C/svg%3E">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
-<link rel="stylesheet" href="mn.css">
+<link rel="stylesheet" href="mn.css?v=3">
 <script>try{var t=localStorage.getItem("qt-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1196,7 +1196,7 @@ html{scrollbar-color:var(--sb-thumb) var(--bg)}
   <div>
     <div class="eyebrow">묵상·기도 달력</div>
     <div class="titlerow">
-      <h1 id="calt">달력</h1>
+      <h1><button type="button" class="calt" id="calt" aria-haspopup="dialog" aria-expanded="false" title="년·월 고르기">달력</button></h1>
       <div class="calnav">
         <button type="button" class="iconbtn" id="calprev" aria-label="이전 달"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
         <button type="button" class="btn" id="caltoday">오늘</button>
@@ -1361,8 +1361,8 @@ html{scrollbar-color:var(--sb-thumb) var(--bg)}
 
 
 <div id="mngate" class="mngate"><div id="mnbox" class="mnbox" role="dialog" aria-modal="true" aria-label="말씀노트 로그인"></div></div>
-<script>window.MN_VERSION="1";</script>
+<script>window.MN_VERSION="3";</script>
 <script src="vendor/supabase.min.js"></script>
 <script src="config.js"></script>
-<script src="mn.js"></script>
+<script src="mn.js?v=3"></script>
 </body></html>

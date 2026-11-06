@@ -1381,6 +1381,37 @@ function renderCalDay(by){var box=document.getElementById("calday");box.textCont
 document.getElementById("calprev").addEventListener("click",function(){calM--;if(calM<0){calM=11;calY--;}renderCal();});
 document.getElementById("calnext").addEventListener("click",function(){calM++;if(calM>11){calM=0;calY++;}renderCal();});
 document.getElementById("caltoday").addEventListener("click",function(){var d=new Date();calY=d.getFullYear();calM=d.getMonth();calSel=today();renderCal();});
+/* ---------- 달력: 년·월 휠로 고르기 ---------- */
+(function(){var btn=document.getElementById("calt"),PK=null,IH=40;
+  function close(apply){if(!PK)return;var p=PK;PK=null;if(apply){calY=p.ys[p.idx(p.yc)];calM=p.idx(p.mc);renderCal();}
+    p.el.remove();if(p.bk)p.bk.remove();btn.setAttribute("aria-expanded","false");document.removeEventListener("pointerdown",p.out,true);document.removeEventListener("keydown",p.key,true);try{btn.focus();}catch(e){}}
+  function column(label,labels,cur){var c=document.createElement("div");c.className="ymcol";c.tabIndex=0;c.setAttribute("role","listbox");c.setAttribute("aria-label",label);
+    var h='<div class="pad"></div>';labels.forEach(function(t,i){h+='<div class="ymi" role="option" data-i="'+i+'">'+t+'</div>';});c.innerHTML=h+'<div class="pad"></div>';
+    var tm=0;function mark(){var i=Math.max(0,Math.min(labels.length-1,Math.round(c.scrollTop/IH)));c.querySelectorAll(".ymi").forEach(function(x,k){var on=k===i;x.classList.toggle("on",on);x.setAttribute("aria-selected",on?"true":"false");});c.setAttribute("aria-activedescendant","");}
+    c.addEventListener("scroll",function(){clearTimeout(tm);tm=setTimeout(mark,60);},{passive:true});
+    c.addEventListener("click",function(e){var it=e.target.closest(".ymi");if(it)c.scrollTo({top:+it.dataset.i*IH,behavior:"smooth"});});
+    c.addEventListener("keydown",function(e){var d=e.key==="ArrowUp"?-1:e.key==="ArrowDown"?1:e.key==="PageUp"?-5:e.key==="PageDown"?5:0;if(!d)return;e.preventDefault();
+      var i=Math.max(0,Math.min(labels.length-1,Math.round(c.scrollTop/IH)+d));c.scrollTo({top:i*IH,behavior:"smooth"});});
+    c._init=function(){c.scrollTop=cur*IH;mark();};return c;}
+  function open(){if(PK){close(false);return;}
+    var now=new Date().getFullYear(),y0=Math.min(calY,now)-30,y1=Math.max(calY,now)+10,ys=[];for(var y=y0;y<=y1;y++)ys.push(y);
+    var el=document.createElement("div");el.className="ympick";el.setAttribute("role","dialog");el.setAttribute("aria-label","년·월 고르기");
+    el.innerHTML='<h4>년 · 월 고르기</h4><div class="ymwrap"></div><div class="ymact"><button type="button" class="btn" data-x="0">취소</button><button type="button" class="btn primary" data-x="1">이동</button></div>';
+    var yc=column("년",ys.map(function(y){return y+"년";}),ys.indexOf(calY)),mc=column("월",[1,2,3,4,5,6,7,8,9,10,11,12].map(function(m){return m+"월";}),calM);
+    el.querySelector(".ymwrap").appendChild(yc);el.querySelector(".ymwrap").appendChild(mc);
+    var bk=null;if(window.matchMedia&&matchMedia("(max-width:600px)").matches){bk=document.createElement("div");bk.className="ymback";document.body.appendChild(bk);}
+    document.body.appendChild(el);
+    var r=btn.getBoundingClientRect();el.style.left=Math.max(12,Math.min(r.left,window.innerWidth-el.offsetWidth-12))+"px";el.style.top=Math.min(r.bottom+8,window.innerHeight-el.offsetHeight-12)+"px";
+    yc._init();mc._init();
+    var p=PK={el:el,bk:bk,ys:ys,yc:yc,mc:mc,idx:function(c){return Math.round(c.scrollTop/IH);},
+      out:function(e){if(!el.contains(e.target)&&!btn.contains(e.target))close(false);},
+      key:function(e){if(e.key==="Escape"){e.preventDefault();e.stopPropagation();close(false);}else if(e.key==="Enter"&&el.contains(document.activeElement)&&document.activeElement.classList.contains("ymcol")){e.preventDefault();close(true);}}};
+    el.querySelectorAll("[data-x]").forEach(function(b){b.addEventListener("click",function(){close(b.dataset.x==="1");});});
+    el.addEventListener("dblclick",function(e){if(e.target.closest(".ymi"))setTimeout(function(){close(true);},250);});
+    document.addEventListener("pointerdown",p.out,true);document.addEventListener("keydown",p.key,true);
+    btn.setAttribute("aria-expanded","true");yc.focus({preventScroll:true});}
+  btn.addEventListener("click",open);})();
+
 function clearQuery(){var q=document.getElementById("q");if(q.value||query){q.value="";query="";}}
 function flashCard(id){var c=document.getElementById(id);if(!c)return;c.classList.remove("hide");setTimeout(function(){c.scrollIntoView({block:"start"});c.classList.remove("flash");void c.offsetWidth;c.classList.add("flash");},60);}
 function goItem(x){clearQuery();
@@ -1842,7 +1873,9 @@ function meDraw(){if(!MEP)return;var d=MEP.el,pr=(ME&&PROFS[ME])||{},can=CANWRIT
     d.querySelectorAll("input,textarea").forEach(function(x){x.addEventListener("keydown",function(ev){if(ev.key==="Enter"&&!ev.isComposing&&(x.tagName==="INPUT"||ev.ctrlKey||ev.metaKey)){ev.preventDefault();meSave();}});});
     mePos();var r=document.getElementById("mep-role");r.focus();r.setSelectionRange(r.value.length,r.value.length);return;}
   d.innerHTML=top+(pr.bio?'<p class="mep-bio">'+esc(pr.bio)+'</p>':'')+'<p class="mep-note">나눔 그룹의 공동체 명단에 이렇게 보여요.</p>'+
-    '<div class="mep-act">'+(can?'<button type="button" class="btn" id="mep-edit">프로필 수정</button>':'')+'<button type="button" class="btn mep-set" id="mep-set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button></div>';
+    '<div class="mep-act">'+(can?'<button type="button" class="btn" id="mep-edit">프로필 수정</button>':'')+'<button type="button" class="btn mep-set" id="mep-set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button><button type="button" class="btn danger" id="mep-out">로그아웃</button></div>';
+  var mo=document.getElementById("mep-out");if(mo)mo.addEventListener("click",function(){if(!mo.classList.contains("armed")){mo.classList.add("armed");mo.textContent="로그아웃할까요?";setTimeout(function(){mo.classList.remove("armed");mo.textContent="로그아웃";},3000);return;}
+    mo.disabled=true;mo.textContent="로그아웃 중…";try{flushAll();}catch(x){}setTimeout(function(){window.MN.signOut();},700);});
   var e=document.getElementById("mep-edit");if(e)e.addEventListener("click",function(){MEP.edit=true;meDraw();});
   var st=document.getElementById("mep-set");if(st)st.addEventListener("click",openSettings);
   mePos();}

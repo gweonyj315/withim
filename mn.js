@@ -196,6 +196,12 @@
     }
   };
 
+  MN.signOut = async function () {
+    try { await sb.auth.signOut(); } catch (e) {}
+    try { ["qt-open", "qt-mottos"].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+    location.replace(location.pathname);
+  };
+
   MN.joinByCode = async function (code) {
     var r = await sb.rpc("join_group_by_code", { p_code: code });
     if (r.error) throw r.error;
@@ -320,7 +326,7 @@
       accMsg.textContent = r.error ? "비밀번호를 바꾸지 못했어요: " + r.error.message : "비밀번호를 바꿨어요.";
       if (!r.error) d.querySelector("#mn-pw").value = "";
     });
-    d.querySelector("#mn-logout").addEventListener("click", async function () { await sb.auth.signOut(); location.reload(); });
+    d.querySelector("#mn-logout").addEventListener("click", function () { MN.signOut(); });
 
     var bk = null, file = d.querySelector("#mn-file"), prev = d.querySelector("#mn-prev"), go = d.querySelector("#mn-import");
     file.addEventListener("change", async function () {
