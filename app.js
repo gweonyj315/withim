@@ -1330,11 +1330,17 @@ function ymd(y,m,d){var x=new Date(y,m,d);return x.getFullYear()+"-"+p2(x.getMon
 function calItems(){var by={};function add(d,it){if(!/^\d{4}-\d{2}-\d{2}$/.test(d||""))return;(by[d]=by[d]||[]).push(it);}
   for(var k in ENTRIES){var e=ENTRIES[k],pr=null;try{pr=parseRef(e.ref,e.book);}catch(x){}var lb=pr?pr.label:((BMAP[e.book]?BMAP[e.book].name+" ":"")+(e.ref||""));
     add(e.date,{kind:"qt",serm:isSerm(e),id:e.id,label:lb.trim()||(isSerm(e)?"설교":"QT"),title:e.title||untitled(e),sub:plain(e.summary||""),order:0});}
-  for(var j in PRAYERS){var p=PRAYERS[j];add(p.date,{kind:"pr",id:p.id,label:p.title||"제목 없는 기도",title:p.title||"제목 없는 기도",sub:PCM[catOf(p)]+(p.answered?" · 응답됨":" · 기도 중"),order:1});
-    prAdds(p).forEach(function(g){add(g.d,{kind:"prn",id:p.id,bid:g.bid,label:"+ "+(p.title||"기도"),title:p.title||"제목 없는 기도",sub:"기도제목 "+g.n+"개 추가"+(g.t?" · "+g.t:""),order:1.5});});
-    if(p.answered&&p.answeredAt)add(p.answeredAt,{kind:"ans",id:p.id,label:"응답 · "+(p.title||"기도"),title:p.title||"제목 없는 기도",sub:PCM[catOf(p)]+" · 기도 시작 "+shortDate(p.date),order:2});}
+  /* 기도: 시작 · 기도제목 추가 · 응답을 모두 "기도" 하나로, 같은 날 같은 기도는 한 줄로 */
+  var prSeen={};
+  function addPr(d,p,what,bid){if(!/^\d{4}-\d{2}-\d{2}$/.test(d||""))return;var key=d+"|"+p.id,it=prSeen[key];
+    if(!it){it=prSeen[key]={kind:"pr",id:p.id,bid:bid||null,label:p.title||"제목 없는 기도",title:p.title||"제목 없는 기도",whats:[],cat:PCM[catOf(p)]+(p.answered?" · 응답됨":" · 기도 중"),order:1};add(d,it);}
+    else if(bid&&!it.bid)it.bid=bid;
+    it.whats.push(what);it.sub=it.cat+" · "+it.whats.join(" · ");}
+  for(var j in PRAYERS){var p=PRAYERS[j];addPr(p.date,p,"시작");
+    prAdds(p).forEach(function(g){addPr(g.d,p,"기도제목 "+g.n+"개 추가"+(g.t?" ("+g.t+")":""),g.bid);});
+    if(p.answered&&p.answeredAt)addPr(p.answeredAt,p,"응답");}
   for(var d in by)by[d].sort(function(a,b){return a.order-b.order;});return by;}
-var KLAB={qt:"QT",pr:"기도",prn:"기도 추가",ans:"응답"};
+var KLAB={qt:"QT",pr:"기도"};
 /* 같은 기도노트 안에 나중에 더한 기도제목 블록 → 그 블록을 만든 날에 표시 */
 function prAdds(p){var start=p.date||"",born="";var ct=Date.parse(p.createdAt||"");if(isFinite(ct)){var cd=new Date(ct);born=ymd(cd.getFullYear(),cd.getMonth(),cd.getDate());}
   var by={},out=[];(p.blocks||[]).forEach(function(b){if(b.type!=="req"||!String(b.text||"").trim())return;var t=blkTime(b);if(t<0)return;if(isFinite(ct)&&t-ct<60000)return;
@@ -1344,20 +1350,20 @@ function prAdds(p){var start=p.date||"",born="";var ct=Date.parse(p.createdAt||"
 function renderCal(){var grid=document.getElementById("calgrid");if(!grid)return;var by=calItems(),td=today();
   document.getElementById("calt").textContent=calY+"년 "+(calM+1)+"월";
   grid.textContent="";["일","월","화","수","목","금","토"].forEach(function(w,i){var h=document.createElement("div");h.className="cwd"+(i===0?" sun":i===6?" sat":"");h.setAttribute("role","columnheader");h.textContent=w;grid.appendChild(h);});
-  var first=new Date(calY,calM,1).getDay(),qtDays=0,prN=0,prnN=0,ansN=0;
+  var first=new Date(calY,calM,1).getDay(),qtDays=0,prN=0;
   for(var c=0;c<42;c++){var dt=new Date(calY,calM,1-first+c),ds=ymd(dt.getFullYear(),dt.getMonth(),dt.getDate()),inM=dt.getMonth()===calM,its=by[ds]||[];
     if(c>=35&&!inM&&c%7===0)break;
     var cell=document.createElement("div");cell.className="cday"+(inM?"":" out")+(ds===td?" today":"")+(ds===calSel?" sel":"")+(dt.getDay()===0?" sun":dt.getDay()===6?" sat":"");cell.setAttribute("role","gridcell");cell.tabIndex=inM?0:-1;cell.dataset.d=ds;
     cell.setAttribute("aria-label",(dt.getMonth()+1)+"월 "+dt.getDate()+"일"+(its.length?", 기록 "+its.length+"개":""));
     var dn=document.createElement("span");dn.className="dn";dn.textContent=dt.getDate();cell.appendChild(dn);
-    if(inM){if(its.some(function(x){return x.kind==="qt";}))qtDays++;its.forEach(function(x){if(x.kind==="pr")prN++;else if(x.kind==="prn")prnN++;else if(x.kind==="ans")ansN++;});}
+    if(inM){if(its.some(function(x){return x.kind==="qt";}))qtDays++;its.forEach(function(x){if(x.kind==="pr")prN++;});}
     var lim=3;its.slice(0,lim).forEach(function(x){var b=document.createElement("button");b.type="button";b.className="mk "+x.kind+(x.serm?" serm":"");b.textContent=x.label;b.title=(x.serm?"설교":KLAB[x.kind])+": "+x.title;
       b.addEventListener("click",function(ev){ev.stopPropagation();goItem(x);});cell.appendChild(b);});
     if(its.length>lim){var mo=document.createElement("span");mo.className="cmore";mo.textContent="+"+(its.length-lim)+"개 더";cell.appendChild(mo);}
     (function(ds2,inM2){cell.addEventListener("click",function(){if(!inM2){var pp=ds2.split("-");calY=+pp[0];calM=+pp[1]-1;}calSel=ds2;renderCal();});
       cell.addEventListener("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();calSel=ds2;renderCal();var n=grid.querySelector('[data-d="'+ds2+'"]');if(n)n.focus();}});})(ds,inM);
     grid.appendChild(cell);}
-  document.getElementById("calsum").textContent="이번 달 말씀노트 "+qtDays+"일 · 기도 시작 "+prN+"개"+(prnN?" · 기도 추가 "+prnN+"번":"")+" · 응답 "+ansN+"개";
+  document.getElementById("calsum").textContent="이번 달 말씀노트 "+qtDays+"일 · 기도 "+prN+"번";
   var st=document.getElementById("calstreak"),days={};for(var k in ENTRIES){if(ENTRIES[k].date)days[ENTRIES[k].date]=1;}
   var n=0,d0=new Date();if(!days[td])d0.setDate(d0.getDate()-1);while(days[ymd(d0.getFullYear(),d0.getMonth(),d0.getDate())]){n++;d0.setDate(d0.getDate()-1);}
   st.innerHTML=n?'QT 연속 <b>'+n+'일</b>째'+(days[td]?'':' · 오늘도 이어 가요'):'오늘 QT로 연속 기록을 시작해 보세요';
@@ -1368,7 +1374,7 @@ function renderCalDay(by){var box=document.getElementById("calday");box.textCont
   var its=(by||calItems())[calSel]||[];
   if(!its.length){var q=document.createElement("p");q.className="none";q.textContent="이날은 기록이 없습니다.";box.appendChild(q);return;}
   var w=document.createElement("div");w.className="citems";its.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="citem";
-    var k=document.createElement("span");k.className="k "+x.kind+(x.serm?" serm":"");k.textContent=x.kind==="qt"?(x.serm?"설교":"QT"):x.kind==="pr"?"기도 시작":x.kind==="prn"?"기도 추가":"응답";b.appendChild(k);
+    var k=document.createElement("span");k.className="k "+x.kind+(x.serm?" serm":"");k.textContent=x.kind==="qt"?(x.serm?"설교":"QT"):"기도";b.appendChild(k);
     var tx=document.createElement("span");tx.className="tx";var bb=document.createElement("b");bb.textContent=x.title;tx.appendChild(bb);var sm=document.createElement("small");sm.textContent=x.kind==="qt"?x.label+(x.sub?" · "+x.sub:""):x.sub;tx.appendChild(sm);b.appendChild(tx);
     var go=document.createElement("span");go.className="go";go.setAttribute("aria-hidden","true");go.textContent="→";b.appendChild(go);
     b.addEventListener("click",function(){goItem(x);});w.appendChild(b);});box.appendChild(w);}
