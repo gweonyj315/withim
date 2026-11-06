@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>말씀노트 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap">
+<script>try{var t=localStorage.getItem("qt-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<style>
+:root{--bg:#f6f4ef;--paper:#fffdf8;--ink:#1d2329;--sub:#5b6570;--line:#e3ddd1;--accent:#1f5f5b;--accent-soft:#e3efec;--red:#c0362c;--red-soft:#fbe9e6;--gold:#a8741a;--gold-soft:#f8eed9;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(30,40,50,.06);--f-display:"Jua","Gowun Dodum",sans-serif;--f-body:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15191d;--paper:#1d2227;--ink:#e7e3da;--sub:#9aa4ae;--line:#323a42;--accent:#6cc2b8;--accent-soft:#1f3634;--red:#ff7b6e;--red-soft:#3a2321;--gold:#e3b45a;--gold-soft:#3a3020;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15191d;--paper:#1d2227;--ink:#e7e3da;--sub:#9aa4ae;--line:#323a42;--accent:#6cc2b8;--accent-soft:#1f3634;--red:#ff7b6e;--red-soft:#3a2321;--gold:#e3b45a;--gold-soft:#3a3020;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;word-break:keep-all}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.top .in{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{font-family:var(--f-display);font-size:19px;color:var(--accent)}
+.brand small{font-family:var(--f-body);color:var(--sub);font-size:13px;margin-left:6px}
+.sp{flex:1}
+main{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+h2{font-family:var(--f-display);font-weight:400;font-size:20px;margin:28px 0 10px;display:flex;align-items:baseline;gap:8px}
+h2 small{font-family:var(--f-body);font-size:13px;color:var(--sub)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 13px;border-radius:999px;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.danger{color:var(--red);border-color:var(--red)}
+.btn.armed{background:var(--red);color:var(--paper);border-color:var(--red)}
+.btn:disabled{opacity:.45;cursor:default}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat b{display:block;font-family:var(--f-display);font-weight:400;font-size:28px;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat span{color:var(--sub);font-size:13.5px}
+.stat.hot{border-color:var(--gold);background:var(--gold-soft)}
+.pend{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--paper);border:1px solid var(--gold);border-radius:12px;padding:10px 12px}
+.prow .who{flex:1 1 200px;min-width:0}
+.prow .who b{display:block}
+.prow .who small{color:var(--sub);word-break:break-all}
+.empty{color:var(--sub);background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:14px;text-align:center}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.tools input,.tools select{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 12px;font-size:14px}
+.tools input{flex:1 1 200px;min-width:0}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th,.tbl td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl th{font-weight:400;color:var(--sub);font-size:13px;white-space:nowrap}
+.tbl td.num{font-variant-numeric:tabular-nums;text-align:right}
+.tbl .acts{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-block;font-size:12px;border-radius:999px;padding:0 9px;line-height:1.75;white-space:nowrap}
+.pill.approved{background:var(--accent-soft);color:var(--accent)}
+.pill.pending{background:var(--gold-soft);color:var(--gold)}
+.pill.rejected,.pill.suspended{background:var(--red-soft);color:var(--red)}
+.pill.admin{background:var(--accent);color:var(--paper)}
+.nm b{display:block}.nm small{color:var(--sub);word-break:break-all}
+.tblwrap{overflow-x:auto}
+@media (max-width:760px){
+  .tbl thead{display:none}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+  .tbl tr{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px}
+  .tbl td{border:0;padding:3px 0}
+  .tbl td.num{text-align:left}
+  .tbl td[data-l]::before{content:attr(data-l)" ";color:var(--sub);font-size:12.5px}
+  .tbl .acts{justify-content:flex-start;margin-top:6px}
+}
+.setgrid{display:flex;flex-direction:column;gap:14px}
+.sw{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.sw input{accent-color:var(--accent);width:18px;height:18px;margin-top:3px}
+.sw small{display:block;color:var(--sub);font-size:13px}
+textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:8px 12px;min-height:70px;resize:vertical}
+.msg{min-height:1.3em;color:var(--sub);font-size:13.5px;margin:6px 0 0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);border-radius:12px;padding:10px 16px;font-size:14.5px;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
+.toast[hidden]{display:none}
+.center{max-width:380px;margin:80px auto;text-align:center}
+</style>
+</head><body>
+<header class="top"><div class="in"><span class="brand">말씀노트<small>관리자</small></span><span class="sp"></span><a class="btn" href="./">말씀노트로</a></div></header>
+<main id="main"><div class="center">불러오는 중…</div></main>
+<div class="toast" id="toast" hidden></div>
+<script src="vendor/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+var C=window.MN_CONFIG,sb=window.supabase.createClient(C.url,C.key),ME=null,ACC=[],STATS=null,SET={},filter={q:"",st:"all"};
+var main=document.getElementById("main");
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function d(s){if(!s)return"";var t=new Date(s);return t.getFullYear()+". "+(t.getMonth()+1)+". "+t.getDate();}
+var tt=0;function toast(m){var t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true;},2600);}
+var STL={approved:"사용 중",pending:"승인 대기",rejected:"거절됨",suspended:"정지됨"};
+function nameOf(id){var a=ACC.filter(function(x){return x.id===id;})[0];return a?a.display_name:"(알 수 없음)";}
+
+async function load(){
+  var r=await Promise.all([sb.from("accounts").select("*").order("created_at",{ascending:false}),sb.rpc("admin_stats"),sb.from("app_settings").select("key,value")]);
+  if(r[0].error||r[1].error){main.innerHTML='<div class="center"><p>관리 정보를 불러오지 못했어요.</p></div>';return;}
+  ACC=r[0].data||[];STATS=r[1].data||{};SET={};(r[2].data||[]).forEach(function(x){SET[x.key]=x.value;});draw();}
+
+function draw(){
+  var pend=ACC.filter(function(a){return a.status==="pending";}),pu=STATS.per_user||{};
+  var h='<section class="stats">'+
+    '<div class="stat"><b>'+(STATS.users||0)+'</b><span>전체 계정</span></div>'+
+    '<div class="stat'+(pend.length?" hot":"")+'"><b>'+pend.length+'</b><span>승인 대기</span></div>'+
+    '<div class="stat"><b>'+(STATS.entries||0)+'</b><span>말씀노트</span></div>'+
+    '<div class="stat"><b>'+(STATS.prayers||0)+'</b><span>기도</span></div>'+
+    '<div class="stat"><b>'+(STATS.groups||0)+'</b><span>나눔 그룹</span></div></section>';
+  h+='<h2>가입 신청 <small>'+(SET.auto_approve===true?"지금은 자동 승인이 켜져 있어요":"승인해야 사이트를 쓸 수 있어요")+'</small></h2>';
+  if(!pend.length)h+='<div class="empty">기다리는 가입 신청이 없어요.</div>';
+  else{h+='<div class="pend">';pend.forEach(function(a){h+='<div class="prow"><div class="who"><b>'+esc(a.display_name)+'</b><small>'+esc(a.email)+' · '+d(a.created_at)+' 신청</small></div>'+
+    '<button class="btn primary" data-a="approve" data-id="'+a.id+'">승인</button><button class="btn" data-a="reject" data-id="'+a.id+'">거절</button></div>';});h+='</div>';}
+  if(pend.length>1)h+='<p><button class="btn" id="approve-all">대기 중 '+pend.length+'명 모두 승인</button></p>';
+
+  h+='<h2>사용자 <small>'+ACC.length+'명</small></h2><div class="tools"><input type="search" id="q" placeholder="이름이나 이메일로 찾기" value="'+esc(filter.q)+'"><select id="st">'+
+    [["all","모든 상태"],["approved","사용 중"],["pending","승인 대기"],["suspended","정지됨"],["rejected","거절됨"]].map(function(o){return '<option value="'+o[0]+'"'+(filter.st===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select></div>';
+  var list=ACC.filter(function(a){var q=filter.q.trim().toLowerCase();return (filter.st==="all"||a.status===filter.st)&&(!q||(a.display_name+" "+a.email).toLowerCase().indexOf(q)>=0);});
+  h+='<div class="tblwrap"><table class="tbl"><thead><tr><th>이름</th><th>상태</th><th>가입일</th><th>최근 접속</th><th style="text-align:right">말씀</th><th style="text-align:right">기도</th><th style="text-align:right">그룹</th><th></th></tr></thead><tbody>';
+  list.forEach(function(a){var s=pu[a.id]||{},self=a.id===ME,acts="";
+    if(!self){
+      if(a.status!=="approved")acts+='<button class="btn primary" data-a="approve" data-id="'+a.id+'">'+(a.status==="pending"?"승인":"다시 사용")+'</button>';
+      if(a.status==="approved")acts+='<button class="btn" data-a="suspend" data-id="'+a.id+'">정지</button>';
+      if(a.status==="approved")acts+=a.role==="admin"?'<button class="btn" data-a="demote" data-id="'+a.id+'">관리자 해제</button>':'<button class="btn" data-a="promote" data-id="'+a.id+'">관리자로</button>';
+      acts+='<button class="btn danger" data-a="delete" data-id="'+a.id+'">삭제</button>';
+    }else acts='<small style="color:var(--sub)">나</small>';
+    h+='<tr><td class="nm"><b>'+esc(a.display_name)+(a.role==="admin"?' <span class="pill admin">관리자</span>':'')+'</b><small>'+esc(a.email)+'</small></td>'+
+      '<td data-l="상태"><span class="pill '+a.status+'">'+STL[a.status]+'</span></td><td data-l="가입">'+d(a.created_at)+'</td><td data-l="최근 접속">'+(d(s.last_sign_in)||"-")+'</td>'+
+      '<td class="num" data-l="말씀">'+(s.entries||0)+'</td><td class="num" data-l="기도">'+(s.prayers||0)+'</td><td class="num" data-l="그룹">'+(s.groups||0)+'</td><td><div class="acts">'+acts+'</div></td></tr>';});
+  if(!list.length)h+='<tr><td colspan="8" style="color:var(--sub)">맞는 사용자가 없어요.</td></tr>';
+  h+='</tbody></table></div>';
+
+  var gl=STATS.groups_list||[],JM={open:"누구나 참여",approve:"승인 후 참여",code:"코드로 참여"};
+  h+='<h2>나눔 그룹 <small>'+gl.length+'개</small></h2>';
+  if(!gl.length)h+='<div class="empty">아직 만든 그룹이 없어요.</div>';
+  else{h+='<div class="tblwrap"><table class="tbl"><thead><tr><th>그룹</th><th>그룹장</th><th>가입 방식</th><th style="text-align:right">멤버</th><th>만든 날</th><th></th></tr></thead><tbody>';
+    gl.forEach(function(g){h+='<tr><td class="nm"><b>'+esc(g.name||"(이름 없음)")+'</b></td><td data-l="그룹장">'+esc(nameOf(g.owner))+'</td><td data-l="방식">'+(JM[g.mode]||g.mode)+'</td><td class="num" data-l="멤버">'+g.members+'</td><td data-l="만든 날">'+d(g.created_at)+'</td><td><div class="acts"><button class="btn danger" data-a="gdel" data-id="'+esc(g.id)+'">그룹 삭제</button></div></td></tr>';});
+    h+='</tbody></table></div>';}
+
+  h+='<h2>사이트 설정</h2><section class="card setgrid">'+
+    '<label class="sw"><input type="checkbox" id="s-auto"'+(SET.auto_approve===true?" checked":"")+'><span>새 가입을 자동으로 승인<small>끄면 관리자가 승인해야 쓸 수 있어요. (권장: 끄기)</small></span></label>'+
+    '<label class="sw"><input type="checkbox" id="s-open"'+(SET.signup_open!==false?" checked":"")+'><span>새 가입 받기<small>끄면 로그인 화면에서 가입하기가 사라지고, 새 계정을 만들 수 없어요.</small></span></label>'+
+    '<div><label for="s-notice" style="font-size:13.5px;color:var(--sub)">공지 문구 <small>로그인 화면과 앱 위쪽에 한 번 보여요. 비우면 보이지 않아요.</small></label><textarea id="s-notice" maxlength="300">'+esc(typeof SET.notice==="string"?SET.notice:"")+'</textarea>'+
+    '<button class="btn primary" id="s-save-notice" style="margin-top:8px">공지 저장</button></div><p class="msg" id="s-msg"></p></section>';
+  main.innerHTML=h;wire();}
+
+function wire(){
+  var q=document.getElementById("q");q.addEventListener("input",function(){filter.q=q.value;var p=q.selectionStart;draw();var n=document.getElementById("q");n.focus();n.setSelectionRange(p,p);});
+  document.getElementById("st").addEventListener("change",function(e){filter.st=e.target.value;draw();});
+  main.querySelectorAll("[data-a]").forEach(function(b){b.addEventListener("click",function(){act(b.getAttribute("data-a"),b.getAttribute("data-id"),b);});});
+  var all=document.getElementById("approve-all");if(all)all.addEventListener("click",async function(){all.disabled=true;
+    var r=await sb.from("accounts").update({status:"approved",approved_at:new Date().toISOString(),approved_by:ME}).eq("status","pending");toast(r.error?"승인하지 못했어요.":"모두 승인했어요.");load();});
+  document.getElementById("s-auto").addEventListener("change",function(e){saveSet("auto_approve",e.target.checked);});
+  document.getElementById("s-open").addEventListener("change",function(e){saveSet("signup_open",e.target.checked);});
+  document.getElementById("s-save-notice").addEventListener("click",function(){saveSet("notice",document.getElementById("s-notice").value.trim());});}
+
+async function saveSet(k,v){var r=await sb.from("app_settings").upsert({key:k,value:v,updated_at:new Date().toISOString()});
+  document.getElementById("s-msg").textContent=r.error?"저장하지 못했어요.":"저장했어요.";if(!r.error)SET[k]=v;}
+
+function arm(b,label,fn){if(b.classList.contains("armed")){fn();return;}var o=b.textContent;b.classList.add("armed");b.textContent=label;setTimeout(function(){b.classList.remove("armed");b.textContent=o;},3500);}
+async function upd(id,patch,msg){var r=await sb.from("accounts").update(patch).eq("id",id);toast(r.error?"바꾸지 못했어요.":msg);load();}
+function act(a,id,b){var n=nameOf(id);
+  if(a==="approve")upd(id,{status:"approved",approved_at:new Date().toISOString(),approved_by:ME},n+"님을 승인했어요.");
+  else if(a==="reject")arm(b,"정말 거절",function(){upd(id,{status:"rejected"},n+"님의 가입을 거절했어요.");});
+  else if(a==="suspend")arm(b,"정말 정지",function(){upd(id,{status:"suspended"},n+"님을 정지했어요.");});
+  else if(a==="promote")arm(b,"관리자로 지정",function(){upd(id,{role:"admin"},n+"님을 관리자로 지정했어요.");});
+  else if(a==="demote")upd(id,{role:"user"},n+"님의 관리자 권한을 해제했어요.");
+  else if(a==="delete")arm(b,"기록까지 모두 삭제",async function(){var r=await sb.rpc("admin_delete_user",{p_uid:id});toast(r.error?"삭제하지 못했어요.":n+"님의 계정과 기록을 삭제했어요.");load();});
+  else if(a==="gdel")arm(b,"정말 삭제",async function(){var r=await sb.from("groups").delete().eq("id",id);toast(r.error?"삭제하지 못했어요.":"그룹을 삭제했어요.");load();});}
+
+(async function(){
+  var s=await sb.auth.getSession(),u=s.data.session&&s.data.session.user;
+  if(!u){main.innerHTML='<div class="center"><p>로그인이 필요해요.</p><a class="btn primary" href="./">로그인하러 가기</a></div>';return;}
+  ME=u.id;var me=await sb.from("accounts").select("role,status").eq("id",ME).maybeSingle();
+  if(!me.data||me.data.role!=="admin"||me.data.status!=="approved"){main.innerHTML='<div class="center"><p>관리자만 볼 수 있는 페이지예요.</p><a class="btn" href="./">말씀노트로</a></div>';return;}
+  await load();
+  var t=0;sb.channel("adm").on("postgres_changes",{event:"*",schema:"public",table:"accounts"},function(){clearTimeout(t);t=setTimeout(function(){if(!document.querySelector(".btn.armed")&&document.activeElement.id!=="s-notice")load();},500);}).subscribe();
+})();
+})();
+</script>
+</body></html>

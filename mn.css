@@ -1,0 +1,40 @@
+/* 로그인 화면 · 설정 추가분 · 공지 띠 (앱의 색 토큰을 그대로 씀) */
+html.mnlocked body{overflow:hidden}
+.mngate{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow:auto}
+.mngate[hidden]{display:none}
+.mnbox{width:100%;max-width:380px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:28px 24px 22px;box-shadow:var(--shadow);margin:auto}
+@media (max-width:420px){.mnbox{padding:24px 18px 18px}}
+.mnlogo{text-align:center;margin-bottom:18px}
+.mnmark{display:block;font-family:var(--f-display);font-size:32px;color:var(--accent);line-height:1.2}
+.mnlogo small{color:var(--sub);font-size:13.5px;letter-spacing:.08em}
+.mnform{display:flex;flex-direction:column}
+.mnform label{font-size:13.5px;color:var(--sub);margin:12px 0 4px}
+.mnform input,.mnset input[type=text],.mnset input[type=password]{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:10px 12px;font-size:16px;font-family:var(--f-body)}
+.mnform input:focus,.mnset input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.mnbig{margin-top:18px;padding:11px 14px;font-size:16px;font-family:var(--f-display)}
+.mnmsg{min-height:1.4em;margin:10px 0 0;font-size:14px;color:var(--red);text-align:center}
+.mnhint{font-size:13px;color:var(--sub);margin:10px 0 0;text-align:center}
+.mnform .mnhint:first-child{margin:0 0 4px;text-align:left;font-size:14.5px}
+.mnlinks{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);font-size:14px;color:var(--sub)}
+.mnlinks button{border:0;background:none;color:var(--accent);font:inherit;cursor:pointer;padding:4px 6px;text-decoration:underline;text-underline-offset:3px}
+.mnstate{text-align:center}
+.mnstate b{display:block;font-family:var(--f-display);font-weight:400;font-size:20px;color:var(--ink);margin-bottom:6px}
+.mnstate p{color:var(--sub);margin:6px 0;font-size:15px}
+.mnstate .mnwho{font-size:13.5px}
+.mnstate .mnrow{justify-content:center;margin-top:14px}
+.mnnotice{background:var(--accent-soft);color:var(--ink);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px;font-size:14.5px;margin:0 0 6px;white-space:pre-wrap}
+/* 설정 창 추가분 */
+.mnset .f{display:block;font-size:13px;color:var(--sub);margin:10px 0 4px}
+.mnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mnrow input{flex:1 1 160px;min-width:0}
+.mnrow .btn{flex:0 0 auto;text-decoration:none}
+.mnacts{margin-top:14px}
+.mnfile{display:block;width:100%;margin:8px 0;font-size:14px;color:var(--sub)}
+.mnprev{display:flex;flex-direction:column;gap:2px;border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin:6px 0 8px;font-size:14px}
+.mnprev b{font-weight:700;word-break:break-all}
+.mnprev span{color:var(--sub)}
+.mnchk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink);margin:6px 0 10px;cursor:pointer}
+.mnchk input{accent-color:var(--accent);width:16px;height:16px}
+/* 공지 띠 */
+.mnbar{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:70;max-width:min(560px,calc(100vw - 32px));display:flex;align-items:flex-start;gap:10px;background:var(--paper);color:var(--ink);border:1px solid var(--accent);border-left-width:4px;border-radius:12px;padding:10px 10px 10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:14.5px;white-space:pre-wrap}
+.mnbar button{flex:0 0 auto;border:0;background:none;color:var(--sub);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
